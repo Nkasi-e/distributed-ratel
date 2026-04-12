@@ -1,0 +1,9 @@
+[rate_limit.default]
+capacity = 100
+refill_per_second = 10.0
+
+[rate_limit.by_kind.user_id]
+capacity = 50
+refill_per_second = 5.0
+
+# ip / api_key / custom fall back to default if omitted
