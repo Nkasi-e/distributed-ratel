@@ -3,7 +3,7 @@ backend = "memory"
 fallback_strategy = "fail_close"
 
 [storage.redis]
-url = "redis://127.0.0.1:6379/
+url = "redis://127.0.0.1:6379/"
 key_prefix = "rate-limit"
 
 [rate_limit.default]
