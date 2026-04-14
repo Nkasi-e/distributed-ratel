@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use dashmap::DashMap;
 use dashmap::mapref::entry::Entry;
 use parking_lot::Mutex;
@@ -8,7 +9,7 @@ use crate::domain::token_bucket::{TokenBucketConfig, TokenBucketState};
 
 use super::error::AppError;
 use super::policy::PolicyTable;
-use super::ports::MonotonicClock;
+use super::ports::{MonotonicClock, RateLimitStore};
 
 pub struct MemoryRateLimiter {
     policy: PolicyTable,
@@ -39,16 +40,19 @@ impl MemoryRateLimiter {
 
     //     Ok(allowed)
     // }
+}
 
-    pub async fn allow(&self, key: &RateLimitKey, cost: u32) -> Result<bool, AppError> {
+#[async_trait]
+impl RateLimitStore for MemoryRateLimiter {
+    async fn allow(&self, key: &RateLimitKey, cost: u32) -> Result<bool, AppError> {
         let now = self.clock.elapsed();
         let cfg: TokenBucketConfig = self.policy.resolve(key.kind());
-
         match self.buckets.entry(key.clone()) {
             Entry::Occupied(o) => {
                 let mut state = o.get().lock();
                 Ok(state.try_allow(&cfg, now, cost as u64)?)
             }
+
             Entry::Vacant(v) => {
                 let mut state = TokenBucketState::new_full_at(now, &cfg);
                 let ok = state.try_allow(&cfg, now, cost as u64)?;
