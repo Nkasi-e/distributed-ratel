@@ -1,6 +1,6 @@
 use crate::domain::key::KeyKind;
-use crate::domain::token_bucket::TokenBucketConfig;
 use crate::domain::sliding_window::SlidingWindowConfig;
+use crate::domain::token_bucket::TokenBucketConfig;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::time::Duration;
@@ -26,15 +26,13 @@ pub struct SlidingWindowConfigSerde {
     pub max_cost_per_window: u64,
 }
 
-
-
 /// Exactly one nested block: `token_bucket` **or** `sliding_window_counter`.
 #[derive(Debug, Clone, Deserialize)]
 pub struct RateLimitRuleSerde {
     #[serde(rename = "tocken_bucket")]
     pub token_bucket: Option<TokenBucketConfigSerde>,
     #[serde(rename = "sliding_window")]
-    pub sliding_window_counter: Option<SlidingWindowConfigSerde>
+    pub sliding_window_counter: Option<SlidingWindowConfigSerde>,
 }
 
 /// Serde-friendly key kind (TOML keys are strings)
@@ -73,22 +71,28 @@ impl From<KeyKindSerde> for KeyKind {
     }
 }
 
-
 #[derive(Debug, Error)]
 pub enum PolicyConfigError {
-    #[error("each rate limit rule must ser exactly one of `token_bucket` or `sliding_window_counter`")]
+    #[error(
+        "each rate limit rule must ser exactly one of `token_bucket` or `sliding_window_counter`"
+    )]
     AmbiguousRule,
 }
 
-
 fn resolve_rule(rule: &RateLimitRuleSerde) -> Result<ResolvedRateLimitPolicy, PolicyConfigError> {
     match (&rule.token_bucket, &rule.sliding_window_counter) {
-        (Some(tb), None) => Ok(ResolvedRateLimitPolicy::TokenBucket(TokenBucketConfig::from(tb))),
-        (None, Some(sw)) => Ok(ResolvedRateLimitPolicy::SlidingWindow(SlidingWindowConfig { window: Duration::from_secs(sw.window_secs), max_cost_per_window: sw.max_cost_per_window })),
+        (Some(tb), None) => Ok(ResolvedRateLimitPolicy::TokenBucket(
+            TokenBucketConfig::from(tb),
+        )),
+        (None, Some(sw)) => Ok(ResolvedRateLimitPolicy::SlidingWindow(
+            SlidingWindowConfig {
+                window: Duration::from_secs(sw.window_secs),
+                max_cost_per_window: sw.max_cost_per_window,
+            },
+        )),
         _ => Err(PolicyConfigError::AmbiguousRule),
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct PolicyTable {

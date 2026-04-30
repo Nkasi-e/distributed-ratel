@@ -37,12 +37,21 @@ impl MemoryRateLimiter {
             ResolvedRateLimitPolicy::TokenBucket(cfg) => {
                 LimiterState::Tb(TokenBucketState::new_full_at(now, cfg))
             }
-            ResolvedRateLimitPolicy::SlidingWindow(_) => LimiterState::Sw(SlidingWindowState::new()),
+            ResolvedRateLimitPolicy::SlidingWindow(_) => {
+                LimiterState::Sw(SlidingWindowState::new())
+            }
         }
     }
 
     fn policy_matches(state: &LimiterState, policy: &ResolvedRateLimitPolicy) -> bool {
-        matches!((state, policy), (LimiterState::Tb(_), ResolvedRateLimitPolicy::TokenBucket(_)) | (LimiterState::Sw(_), ResolvedRateLimitPolicy::SlidingWindow(_)))
+        matches!(
+            (state, policy),
+            (LimiterState::Tb(_), ResolvedRateLimitPolicy::TokenBucket(_))
+                | (
+                    LimiterState::Sw(_),
+                    ResolvedRateLimitPolicy::SlidingWindow(_)
+                )
+        )
     }
 
     // pub async fn allow(&self, key: &RateLimitKey, cost: u32) -> Result<bool, AppError> {
@@ -87,7 +96,7 @@ impl RateLimitStore for MemoryRateLimiter {
 
             Entry::Vacant(v) => {
                 let mut guard = Self::reset_state(&policy, now);
-                let ok = match(&policy, &mut guard) {
+                let ok = match (&policy, &mut guard) {
                     (ResolvedRateLimitPolicy::TokenBucket(cfg), LimiterState::Tb(tb)) => {
                         tb.try_allow(cfg, now, cost_u)?
                     }

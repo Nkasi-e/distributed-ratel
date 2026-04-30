@@ -24,7 +24,12 @@ impl SlidingWindowState {
         }
     }
 
-    pub fn try_allow(&mut self, cfg: &SlidingWindowConfig, now: Duration, cost: u64) -> Result<bool, DomainError> {
+    pub fn try_allow(
+        &mut self,
+        cfg: &SlidingWindowConfig,
+        now: Duration,
+        cost: u64,
+    ) -> Result<bool, DomainError> {
         if cost == 0 {
             return Err(DomainError::InvalidCost);
         }
@@ -56,7 +61,6 @@ impl Default for SlidingWindowState {
         Self::new()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

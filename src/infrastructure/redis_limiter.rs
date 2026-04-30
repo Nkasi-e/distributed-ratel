@@ -10,7 +10,6 @@ use crate::domain::key::RateLimitKey;
 
 use super::config::{FallbackStrategy, RedisConfig};
 
-
 const TOKEN_BUCKET_LUA: &str = include_str!("../../lua/token_bucket.lua");
 
 pub struct RedisRateLimiter {
