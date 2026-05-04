@@ -6,3 +6,6 @@ pub mod service;
 
 pub use ports::RateLimiter;
 pub use service::AllowService;
+
+
+pub use policy::{PolicyConfigError, PolicyTable, ResolvedRateLimitPolicy};
