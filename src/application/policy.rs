@@ -29,9 +29,9 @@ pub struct SlidingWindowConfigSerde {
 /// Exactly one nested block: `token_bucket` **or** `sliding_window_counter`.
 #[derive(Debug, Clone, Deserialize)]
 pub struct RateLimitRuleSerde {
-    #[serde(rename = "tocken_bucket")]
+    #[serde(rename = "token_bucket")]
     pub token_bucket: Option<TokenBucketConfigSerde>,
-    #[serde(rename = "sliding_window")]
+    #[serde(rename = "sliding_window_counter")]
     pub sliding_window_counter: Option<SlidingWindowConfigSerde>,
 }
 
@@ -74,7 +74,7 @@ impl From<KeyKindSerde> for KeyKind {
 #[derive(Debug, Error)]
 pub enum PolicyConfigError {
     #[error(
-        "each rate limit rule must ser exactly one of `token_bucket` or `sliding_window_counter`"
+        "each rate limit rule must set exactly one of `token_bucket` or `sliding_window_counter`"
     )]
     AmbiguousRule,
 }

@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     telemetry::init_tracing();
 
     let cfg = AppConfig::load()?;
-    let policy = PolicyTable::from_config(cfg.rate_limit);
+    let policy = PolicyTable::try_from_config(cfg.rate_limit)?;
     //    let clock: Arc<dyn MonotonicClock> = Arc::new(SystemClock::new());
     let store: Arc<dyn RateLimitStore> = match cfg.storage.backend {
         BackendKind::Memory => {

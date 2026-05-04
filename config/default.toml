@@ -14,4 +14,6 @@ refill_per_second = 10.0
 capacity = 50
 refill_per_second = 5.0
 
-# ip / api_key / custom fall back to default if omitted
+[rate_limit.by_kind.ip.sliding_window_counter]
+window_secs = 60
+max_cost_per_window = 120

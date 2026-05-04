@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use crate::domain::key::RateLimitKey;
 use crate::domain::sliding_window::SlidingWindowState;
-use crate::domain::token_bucket::{TokenBucketConfig, TokenBucketState};
+use crate::domain::token_bucket::TokenBucketState;
 
 use super::error::AppError;
 use super::policy::{PolicyTable, ResolvedRateLimitPolicy};
@@ -80,8 +80,9 @@ impl RateLimitStore for MemoryRateLimiter {
         match self.buckets.entry(key.clone()) {
             Entry::Occupied(o) => {
                 let mut guard = o.get().lock();
-                if Self::policy_matches(&guard, &policy) {
-                    *guard = Self::reset_state(&policy, now)
+                if !Self::policy_matches(&guard, &policy) {
+                    tracing::warn!(?key, "policy mismatch, resetting state");
+                    *guard = Self::reset_state(&policy, now);
                 }
                 Ok(match (&policy, &mut *guard) {
                     (ResolvedRateLimitPolicy::TokenBucket(cfg), LimiterState::Tb(tb)) => {
