@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use std::sync::Arc;
 
+use crate::application::ports::RateLimitOutcome;
 use crate::domain::key::RateLimitKey;
 
 use super::error::AppError;
@@ -19,7 +20,11 @@ impl AllowService {
 
 #[async_trait]
 impl RateLimiter for AllowService {
-    async fn allow(&self, key: &RateLimitKey, cost: u32) -> Result<bool, AppError> {
-        self.store.allow(key, cost).await
+    async fn allow_with_outcome(
+        &self,
+        key: &RateLimitKey,
+        cost: u32,
+    ) -> Result<RateLimitOutcome, AppError> {
+        self.store.allow_with_outcome(key, cost).await
     }
 }
