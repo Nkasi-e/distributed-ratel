@@ -4,10 +4,8 @@ use tower_http::classify::{ServerErrorsAsFailures, SharedClassifier};
 use tower_http::trace::TraceLayer;
 use tracing::info_span;
 
-
 /// Request logging / tracing (middleware).
-pub fn request_trace_layer(
-) -> TraceLayer<
+pub fn request_trace_layer() -> TraceLayer<
     SharedClassifier<ServerErrorsAsFailures>,
     impl Clone + Fn(&Request<Body>) -> tracing::Span,
 > {

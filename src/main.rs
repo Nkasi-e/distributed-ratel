@@ -10,7 +10,7 @@ use distributed_ratel::infrastructure::clock::SystemClock;
 use distributed_ratel::infrastructure::config::{AppConfig, BackendKind};
 use distributed_ratel::infrastructure::redis_limiter::RedisRateLimiter;
 use distributed_ratel::infrastructure::telemetry;
-use distributed_ratel::presentation::{build_router, AppState};
+use distributed_ratel::presentation::{AppState, build_router};
 use tokio::net::TcpListener;
 
 #[tokio::main]
@@ -19,7 +19,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cfg = AppConfig::load()?;
     let policy = PolicyTable::try_from_config(cfg.rate_limit)?;
-    //    let clock: Arc<dyn MonotonicClock> = Arc::new(SystemClock::new());
     let store: Arc<dyn RateLimitStore> = match cfg.storage.backend {
         BackendKind::Memory => {
             let clock: Arc<dyn MonotonicClock> = Arc::new(SystemClock::new());
@@ -27,18 +26,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         BackendKind::Redis => Arc::new(
-            RedisRateLimiter::new(cfg.storage.redis, cfg.storage.fallback_strategy, policy.clone()).await?,
+            RedisRateLimiter::new(
+                cfg.storage.redis,
+                cfg.storage.fallback_strategy,
+                policy.clone(),
+            )
+            .await?,
         ),
     };
-    //    let limiter = MemoryRateLimiter::new(policy, Arc::clone(&clock));
-    //    let service = AllowService::memory(limiter);
     let service = AllowService::new(store);
     let limiter: Arc<dyn RateLimiter> = Arc::new(service);
 
-    let state = AppState {
-        limiter,
-        policy
-    };
+    let state = AppState { limiter, policy };
 
     let app = build_router(state);
     let addr = "0.0.0.0:8080";

@@ -54,6 +54,31 @@ impl SlidingWindowState {
             Ok(false)
         }
     }
+
+    fn prune_expire(&mut self, cfg: &SlidingWindowConfig, now: Duration) {
+        let horizon = now.saturating_sub(cfg.window);
+        while let Some(&(t, _)) = self.entries.front() {
+            if t < horizon {
+                self.entries.pop_front();
+            } else {
+                break;
+            }
+        }
+    }
+
+    pub fn used_cost(&self) -> u64 {
+        self.entries.iter().map(|(_, c)| *c).sum()
+    }
+
+    pub fn reset_after_secs(&self, cfg: &SlidingWindowConfig, now: Duration) -> u64 {
+        match self.entries.front() {
+            None => 0,
+            Some((oldest, _)) => {
+                let reset_at = (*oldest + cfg.window).as_secs();
+                reset_at.saturating_sub(now.as_secs())
+            }
+        }
+    }
 }
 
 impl Default for SlidingWindowState {

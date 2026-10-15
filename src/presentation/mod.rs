@@ -1,14 +1,16 @@
-
-mod state;
 mod dto;
-mod handlers;
 mod error;
+mod handlers;
 mod middleware;
+mod state;
 
 pub use state::AppState;
 
 use axum::Router;
 
 pub fn build_router(state: AppState) -> Router {
-    Router::new().merge(handlers::routes()).layer(middleware::request_trace_layer()).with_state(state)
+    Router::new()
+        .merge(handlers::routes())
+        .layer(middleware::request_trace_layer())
+        .with_state(state)
 }

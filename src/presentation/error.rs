@@ -1,6 +1,9 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde_json::json;
-
 
 use crate::application::error::AppError;
 
@@ -10,7 +13,6 @@ pub enum ApiError {
     Domain(String),
     Redis(String),
 }
-
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {

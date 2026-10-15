@@ -1,11 +1,10 @@
 use std::net::IpAddr;
 use std::str::FromStr;
 
-
 use serde::{Deserialize, Serialize};
 
-use crate::domain::key::RateLimitKey;
 use crate::application::policy::ResolvedRateLimitPolicy;
+use crate::domain::key::RateLimitKey;
 
 /// `POST /allow` body
 #[derive(Debug, Deserialize)]
@@ -14,14 +13,13 @@ pub struct AllowRequest {
     pub cost: u32,
 }
 
-
 #[derive(Debug, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum KeyDto {
-    UserId {id: String},
-    Ip {addr: String},
-    ApiKey {key: String},
-    Custom {id: String},
+    UserId { id: String },
+    Ip { addr: String },
+    ApiKey { key: String },
+    Custom { id: String },
 }
 
 impl TryFrom<KeyDto> for RateLimitKey {
@@ -40,19 +38,16 @@ impl TryFrom<KeyDto> for RateLimitKey {
     }
 }
 
-
-
 /// `POST /allow` JSON response (extend when store returns real remaining/reset).
 #[derive(Debug, Serialize)]
 pub struct AllowResponse {
     pub allowed: bool,
     pub cost: u64,
-/// TODO: real remaining from bucket/window state, not heuristic.
+    /// TODO: real remaining from bucket/window state, not heuristic.
     pub remaining: u64,
-    /// Unix seconds — TODO align with algorithm (window end / bucket refill). 
+    /// Unix seconds — TODO align with algorithm (window end / bucket refill).
     pub reset_unix: u64,
 }
-
 
 /// Map policy to a single “limit” number for `X-RateLimit-Limit`.
 pub fn limit_from_header(policy: &ResolvedRateLimitPolicy) -> u64 {
@@ -61,7 +56,6 @@ pub fn limit_from_header(policy: &ResolvedRateLimitPolicy) -> u64 {
         ResolvedRateLimitPolicy::SlidingWindow(sw) => sw.max_cost_per_window,
     }
 }
-
 
 /// Rough reset horizon in seconds from “now” for `X-RateLimit-Reset` stub.
 pub fn reset_offset_secs(policy: &ResolvedRateLimitPolicy) -> u64 {
